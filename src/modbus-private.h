@@ -98,6 +98,8 @@ struct _modbus {
     int *dtu_fd;
     int debug;
     int error_recovery;
+    /* 1: dtu*/
+    char mode;
     struct timeval response_timeout;
     struct timeval byte_timeout;
     struct timeval indication_timeout;

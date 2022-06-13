@@ -182,11 +182,11 @@ static int send_msg(modbus_t *ctx, uint8_t *msg, int msg_length)
     do {
         rc = ctx->backend->send(ctx, msg, msg_length);
         if (rc == -1) {
+            int saved_errno = errno;
             _error_print(ctx, NULL);
             if (ctx->error_recovery & MODBUS_ERROR_RECOVERY_LINK) {
-                int saved_errno = errno;
 
-                if ((errno == EBADF || errno == ECONNRESET || errno == EPIPE)) {
+                if ((saved_errno == EBADF || saved_errno == ECONNRESET ||  saved_errno == EPIPE)) {
                     modbus_close(ctx);
                     _sleep_response_timeout(ctx);
                     modbus_connect(ctx);
@@ -194,8 +194,8 @@ static int send_msg(modbus_t *ctx, uint8_t *msg, int msg_length)
                     _sleep_response_timeout(ctx);
                     modbus_flush(ctx);
                 }
-                errno = saved_errno;
             }
+            errno = saved_errno;
         }
     } while ((ctx->error_recovery & MODBUS_ERROR_RECOVERY_LINK) &&
              rc == -1);
@@ -410,7 +410,11 @@ int _modbus_receive_msg(modbus_t *ctx, uint8_t *msg, msg_type_t msg_type)
 
     /* Add a file descriptor to the set */
     FD_ZERO(&rset);
-    FD_SET(ctx->s, &rset);
+    if (ctx->mode == 1) {
+        FD_SET(*ctx->dtu_fd, &rset);
+    } else { 
+        FD_SET(ctx->s, &rset);
+    }
 
     /* We need to analyse the message step by step.  At the first step, we want
      * to reach the function code because all packets contain this
@@ -541,7 +545,11 @@ int serial_receive_msg(modbus_t *ctx, uint8_t *msg, int max_length)
 
     /* Add a file descriptor to the set */
     FD_ZERO(&rset);
-    FD_SET(ctx->s, &rset);
+    if (ctx->mode == 1) { 
+        FD_SET(*ctx->dtu_fd, &rset);
+    } else { 
+        FD_SET(ctx->s, &rset);
+    }
 
 
 	tv.tv_sec = ctx->response_timeout.tv_sec;
@@ -642,7 +650,11 @@ int receive_645_msg(modbus_t *ctx, uint8_t *msg, int max_length)
 
     /* Add a file descriptor to the set */
     FD_ZERO(&rset);
-    FD_SET(ctx->s, &rset);
+    if (ctx->mode == 1) { 
+        FD_SET(*ctx->dtu_fd, &rset);
+    } else { 
+        FD_SET(ctx->s, &rset);
+    }
 
 
 	tv.tv_sec = ctx->response_timeout.tv_sec;
@@ -1830,6 +1842,7 @@ void _modbus_init_common(modbus_t *ctx)
     /* Slave and socket are initialized to -1 */
     ctx->slave = -1;
     ctx->s = -1;
+    ctx->mode = 0;
 
     ctx->debug = FALSE;
     ctx->error_recovery = MODBUS_ERROR_RECOVERY_NONE;
@@ -1885,7 +1898,11 @@ int modbus_set_socket(modbus_t *ctx, int s)
         return -1;
     }
 
-    ctx->s = s;
+    if (ctx->mode == 1) { 
+        s = *ctx->dtu_fd;
+    } else { 
+        ctx->s = s;
+    }
     return 0;
 }
 
@@ -1896,7 +1913,11 @@ int modbus_get_socket(modbus_t *ctx)
         return -1;
     }
 
-    return ctx->s;
+    if (ctx->mode == 1) { 
+        return *ctx->dtu_fd;
+    } else { 
+        return ctx->s;
+    }
 }
 
 /* Get the timeout interval used to wait for a response */

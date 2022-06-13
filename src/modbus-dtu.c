@@ -373,14 +373,14 @@ static int _modbus_dtu_select(modbus_t *ctx, fd_set *rset,
         return -1;
     }
 #else
-    while ((s_rc = select(ctx->s+1, rset, NULL, NULL, tv)) == -1) {
+    while ((s_rc = select(*ctx->dtu_fd+1, rset, NULL, NULL, tv)) == -1) {
         if (errno == EINTR) {
             if (ctx->debug) {
                 fprintf(stderr, "A non blocked signal was caught\n");
             }
             /* Necessary after an error */
             FD_ZERO(rset);
-            FD_SET(ctx->s, rset);
+            FD_SET(*ctx->dtu_fd, rset);
         } else {
             return -1;
         }
@@ -443,6 +443,7 @@ modbus_t* modbus_new_dtu(int *fd, modbus_dtu_send dtusend,
     _modbus_init_common(ctx);
     ctx->s = *fd;
     ctx->dtu_fd = fd;
+    ctx->mode = 1;
 
 
     _modbus_dtu_backend.send = dtusend;
