@@ -429,7 +429,8 @@ modbus_backend_t _modbus_dtu_backend = {
 
 modbus_t* modbus_new_dtu(int *fd, modbus_dtu_send dtusend, 
         modbus_dtu_recv dturecv, modbus_dtu_close dtuclose, 
-        modbus_dtu_flush dtuflush, modbus_dtu_connect dtuconnect)
+        modbus_dtu_flush dtuflush, modbus_dtu_connect dtuconnect,
+        modbus_dtu_select dtuselect)
 {
     modbus_t *ctx;
     modbus_dtu_t *ctx_dtu;
@@ -451,6 +452,7 @@ modbus_t* modbus_new_dtu(int *fd, modbus_dtu_send dtusend,
     _modbus_dtu_backend.close = dtuclose;
     _modbus_dtu_backend.flush = dtuflush;
     _modbus_dtu_backend.connect = dtuconnect;
+    _modbus_dtu_backend.select = dtuselect;
 
     ctx->backend = &_modbus_dtu_backend;
 

@@ -1403,13 +1403,6 @@ static int read_registers(modbus_t *ctx, int function, int addr, int nb,
     }
 
     req_length = ctx->backend->build_request_basis(ctx, function, addr, nb, req);
-    if (ctx->debug) { 
-		int j;
-	    for (j = 0; j < req_length; j++) { 
-		    fprintf(stderr, "%x ", req[j]);
-	    }
-	    fprintf (stderr, "\n");
-    }
 
     rc = send_msg(ctx, req, req_length);
     if (rc > 0) {
@@ -1899,7 +1892,7 @@ int modbus_set_socket(modbus_t *ctx, int s)
     }
 
     if (ctx->mode == 1) { 
-        s = *ctx->dtu_fd;
+        *ctx->dtu_fd = s;
     } else { 
         ctx->s = s;
     }

@@ -299,6 +299,8 @@ typedef ssize_t (*modbus_dtu_recv)(modbus_t *ctx, uint8_t *rsp, int rsp_length);
 typedef void (*modbus_dtu_close)(modbus_t *ctx);
 typedef int (*modbus_dtu_flush)(modbus_t *ctx);
 typedef int (*modbus_dtu_connect)(modbus_t *ctx);
+typedef int (*modbus_dtu_select)(modbus_t *ctx, fd_set *rset,
+                              struct timeval *tv, int length_to_read);
 
 
 #include "modbus-tcp.h"

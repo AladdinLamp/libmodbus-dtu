@@ -18,7 +18,8 @@ MODBUS_BEGIN_DECLS
 
 MODBUS_API modbus_t* modbus_new_dtu(int *fd, modbus_dtu_send dtusend, 
          modbus_dtu_recv dturecv, modbus_dtu_close dtuclose,
-         modbus_dtu_flush dtuflush, modbus_dtu_connect dtuconnect);
+         modbus_dtu_flush dtuflush, modbus_dtu_connect dtuconnect, 
+         modbus_dtu_select dtuselect);
 
 #define MODBUS_DTU_RS232 0
 #define MODBUS_DTU_RS485 1
